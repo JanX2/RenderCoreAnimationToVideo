@@ -101,23 +101,23 @@ int main(int argc, const char * argv[])
 		
 		// Create a composition
 		CMPersistentTrackID trackID = [composition unusedTrackID];
-		AVMutableVideoCompositionLayerInstruction *layerInstr1 =
+		AVMutableVideoCompositionLayerInstruction *layerInstruction =
 #if ENABLE_COMPOSITING_OVER_SOURCE_FILE
 		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:trackA];
 #else
 		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstruction];
 #endif
-		layerInstr1.trackID = trackID;
+		layerInstruction.trackID = trackID;
 		
-		AVMutableVideoCompositionInstruction *instr = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
-		instr.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
-		instr.layerInstructions = @[layerInstr1];
+		AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+		instruction.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
+		instruction.layerInstructions = @[layerInstruction];
 		
 		CMPersistentTrackID renderTrackID = [composition unusedTrackID];
 		AVMutableVideoComposition *renderComp = [AVMutableVideoComposition videoComposition];
 		renderComp.renderSize    = renderAnimLayer.frame.size;
 		renderComp.frameDuration = frameDuration;
-		renderComp.instructions  = @[instr];
+		renderComp.instructions  = @[instruction];
 		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:renderAnimLayer
 																												   asTrackID:renderTrackID];
 	
