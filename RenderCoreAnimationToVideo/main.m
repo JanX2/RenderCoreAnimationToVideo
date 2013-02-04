@@ -137,10 +137,13 @@ int main(int argc, const char * argv[])
 			exit(returnCode);
 		}];
 		
-		// TODO: remove once everything works and objects have been retained.
-		while (exportSession.progress < 1.0)
-			usleep(200000);
-	    
+		NSTimeInterval resolution = 0.2;
+		NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
+		while (exportSession.status == AVAssetExportSessionStatusExporting &&
+			   exportSession.progress < 1.0) {
+			NSDate *next = [NSDate dateWithTimeIntervalSinceNow:resolution];
+			[currentRunLoop runMode:NSDefaultRunLoopMode beforeDate:next];
+		}
 	}
 	
     return EXIT_SUCCESS;
