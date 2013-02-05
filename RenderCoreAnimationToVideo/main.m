@@ -156,11 +156,12 @@ int main(int argc, const char * argv[])
 		instruction.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
 		instruction.layerInstructions = @[layerInstruction];
 		
-		CMPersistentTrackID renderTrackID = [composition unusedTrackID];
 		AVMutableVideoComposition *renderComp = [AVMutableVideoComposition videoComposition];
 		renderComp.renderSize    = renderFrame.size;
 		renderComp.frameDuration = frameDuration;
 		renderComp.instructions  = @[instruction];
+
+		CMPersistentTrackID renderTrackID = [composition unusedTrackID];
 		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:renderAnimLayer
 																												   asTrackID:renderTrackID];
 
