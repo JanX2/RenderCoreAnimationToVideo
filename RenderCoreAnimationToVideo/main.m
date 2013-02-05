@@ -14,6 +14,7 @@
 #import "CCBlankMovieAsset.h"
 
 #define ENABLE_COMPOSITING_OVER_SOURCE_FILE	0
+#define ENABLE_FAST_TEST					1
 
 CGPoint CGPointOffset(CGPoint p, CGFloat dx, CGFloat dy)
 {
@@ -28,25 +29,35 @@ int main(int argc, const char * argv[])
 
 		// Based on http://stackoverflow.com/questions/6988950/avvideocompositioncoreanimationtool-on-export-only-sends-the-image-and-audio-but
 		
-#if ENABLE_COMPOSITING_OVER_SOURCE_FILE
 		NSError *error = nil;
-		NSString *inFileName = @"in.mov";
-#endif
 #if ENABLE_COMPOSITING_OVER_SOURCE_FILE
 		NSString *inFileName = @"in.mp4";
 		NSURL *sourceFileURL = [NSURL fileURLWithPath:inFileName];
 #else
 		NSURL *sourceFileURL = nil;
+#endif
 
 #define FRAMES_PER_SECOND	25
 
 		NSString *outFileName = @"out.mov";
-		CFTimeInterval duration = 30.0;
+		NSURL *exportURL = [NSURL URLWithString:outFileName];
+		
+		CFTimeInterval duration
+#if ENABLE_FAST_TEST
+		= 1.0;
+#else
+		= 30.0;
+#endif
 		
 		CMTimeScale targetTimescale = FRAMES_PER_SECOND;
 		CMTime frameDuration = CMTimeMakeWithSeconds(1, targetTimescale);
 		
-		CGRect renderFrame = CGRectMake(0, 0, 1280, 720);
+		CGRect renderFrame
+#if ENABLE_FAST_TEST
+		= CGRectMake(0, 0, 640, 360);
+#else
+		= CGRectMake(0, 0, 1280, 720);
+#endif
 		
 		CMTime durationTime = CMTimeMakeWithSeconds(duration, 1);
 		
