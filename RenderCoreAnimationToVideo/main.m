@@ -87,7 +87,7 @@ int main(int argc, const char * argv[])
 		AVURLAsset *asset = [AVURLAsset URLAssetWithURL:sourceFileURL
 												options:nil];
 #else
-		CGColorRef bgColor = CGColorCreateGenericGray(0.75, 1.0);
+		CGColorRef bgColor = CGColorCreateGenericGray(0.0, 1.0);
 		CCBlankMovieAsset *asset = [CCBlankMovieAsset blankMovieWithSize:renderFrame.size
 																duration:durationTime
 													  andBackgroundColor:bgColor];
