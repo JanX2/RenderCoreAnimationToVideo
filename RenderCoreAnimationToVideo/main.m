@@ -148,13 +148,9 @@ int main(int argc, const char * argv[])
 		
 		// Create a composition
 		AVMutableVideoCompositionLayerInstruction *layerInstruction =
-#if 1
-		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:trackA];
-#else
 		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstruction];
 		CMPersistentTrackID trackID = [composition unusedTrackID];
 		layerInstruction.trackID = trackID;
-#endif
 		
 		AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
 		instruction.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
