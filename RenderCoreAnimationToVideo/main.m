@@ -163,7 +163,16 @@ int main(int argc, const char * argv[])
 		renderComp.instructions  = @[instruction];
 		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:renderAnimLayer
 																												   asTrackID:renderTrackID];
-	
+
+		// Remove the file at exportURL if it exists.
+		if ([exportURL checkResourceIsReachableAndReturnError:NULL] == YES) {
+			NSFileManager *fileManager = [NSFileManager defaultManager];
+			if ([fileManager removeItemAtURL:exportURL error:&error] == NO) {
+				NSLog(@"\n%@", error);
+				return EXIT_FAILURE;
+			}
+		}
+		
 		// Create an export session and export
 		AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:composition
 																				presetName:AVAssetExportPresetAppleProRes422LPCM];
