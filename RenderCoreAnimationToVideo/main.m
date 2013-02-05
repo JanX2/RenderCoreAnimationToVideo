@@ -199,7 +199,9 @@ int main(int argc, const char * argv[])
 		}
 		
 		// In case exportSession fails immediately.
-		reportForExportSessionAndURL(exportSession, exportURL);
+		if (exportSession.status != AVAssetExportSessionStatusCompleted) {
+			reportForExportSessionAndURL(exportSession, exportURL);
+		}
 	}
 	
     return EXIT_FAILURE;
