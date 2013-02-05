@@ -11,6 +11,8 @@
 #import <CoreMedia/CoreMedia.h>
 #import <QuartzCore/QuartzCore.h>
 
+#import "CCBlankMovieAsset.h"
+
 #define ENABLE_COMPOSITING_OVER_SOURCE_FILE	0
 
 CGPoint CGPointOffset(CGPoint p, CGFloat dx, CGFloat dy)
@@ -30,6 +32,11 @@ int main(int argc, const char * argv[])
 		NSError *error = nil;
 		NSString *inFileName = @"in.mov";
 #endif
+#if ENABLE_COMPOSITING_OVER_SOURCE_FILE
+		NSString *inFileName = @"in.mp4";
+		NSURL *sourceFileURL = [NSURL fileURLWithPath:inFileName];
+#else
+		NSURL *sourceFileURL = nil;
 
 #define FRAMES_PER_SECOND	25
 
@@ -46,9 +53,15 @@ int main(int argc, const char * argv[])
 		// Composition setup.
 		AVMutableComposition *composition = [AVMutableComposition composition];
 #if ENABLE_COMPOSITING_OVER_SOURCE_FILE
-		NSURL *sourceFileURL = [NSURL fileURLWithPath:inFileName];
 		AVURLAsset *asset = [AVURLAsset URLAssetWithURL:sourceFileURL
 												options:nil];
+#else
+		CGColorRef bgColor = CGColorCreateGenericGray(0.75, 1.0);
+		CCBlankMovieAsset *asset = [CCBlankMovieAsset blankMovieWithSize:renderFrame.size
+																duration:durationTime
+													  andBackgroundColor:bgColor];
+		CFRelease(bgColor);
+#endif
 		if (asset == nil) {
 			NSLog(@"Missing movie file:\n%@", sourceFileURL);
 			return EXIT_FAILURE;
@@ -71,7 +84,6 @@ int main(int argc, const char * argv[])
 			NSLog(@"%@", error);
 			return EXIT_FAILURE;
 		}
-#endif
 		
 		// Create the animated layer
 		CALayer *renderAnimLayer = [CALayer layer];
@@ -100,14 +112,14 @@ int main(int argc, const char * argv[])
 		[renderAnimLayer addSublayer:square];
 		
 		// Create a composition
-		CMPersistentTrackID trackID = [composition unusedTrackID];
 		AVMutableVideoCompositionLayerInstruction *layerInstruction =
-#if ENABLE_COMPOSITING_OVER_SOURCE_FILE
+#if 1
 		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:trackA];
 #else
 		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstruction];
-#endif
+		CMPersistentTrackID trackID = [composition unusedTrackID];
 		layerInstruction.trackID = trackID;
+#endif
 		
 		AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
 		instruction.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
