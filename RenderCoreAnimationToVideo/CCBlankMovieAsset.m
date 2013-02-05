@@ -7,8 +7,6 @@
 //
 
 #import "CCBlankMovieAsset.h"
-//#import <CocoaPuffs/CocoaPuffs.h>
-#import "NSString+NUExtensions.h"
 
 @implementation CCBlankMovieAsset
 
@@ -32,9 +30,11 @@
 	CGColorSpaceRef colorSpace = NULL;
 	CVReturn result;
 	
-	NSString *tempfile = [NSString stringForPathToTemporaryFileWithExtension:@"mov"];
-	NSURL	 *tempURL  = [NSURL fileURLWithPath:tempfile];
 	NSError	 *error	   = nil;
+	
+	NSString *fileName = [@"CCBlankMovieAsset" stringByAppendingPathExtension:@"mov"];
+	NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:fileName];
+	NSURL     *tempURL = [NSURL fileURLWithPath:filePath];
 	
 	@try {
 		

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		3D9FDD8B16C0F94A004840C6 /* CCBlankMovieAsset.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D9FDD8A16C0F94A004840C6 /* CCBlankMovieAsset.m */; };
-		3D9FDD8E16C0F9C8004840C6 /* NSString+NUExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D9FDD8D16C0F9C8004840C6 /* NSString+NUExtensions.m */; };
 		3DE1E3E516C00D940017CBC8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DE1E3E416C00D940017CBC8 /* main.m */; };
 		3DE1E3E916C00D940017CBC8 /* RenderCoreAnimationToVideo.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DE1E3E816C00D940017CBC8 /* RenderCoreAnimationToVideo.1 */; };
 		3DE1E3F016C014BB0017CBC8 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DE1E3EF16C014BB0017CBC8 /* Cocoa.framework */; };
@@ -33,8 +32,6 @@
 /* Begin PBXFileReference section */
 		3D9FDD8916C0F94A004840C6 /* CCBlankMovieAsset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCBlankMovieAsset.h; sourceTree = "<group>"; };
 		3D9FDD8A16C0F94A004840C6 /* CCBlankMovieAsset.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CCBlankMovieAsset.m; sourceTree = "<group>"; };
-		3D9FDD8C16C0F9C8004840C6 /* NSString+NUExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+NUExtensions.h"; sourceTree = "<group>"; };
-		3D9FDD8D16C0F9C8004840C6 /* NSString+NUExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+NUExtensions.m"; sourceTree = "<group>"; };
 		3DE1E3DE16C00D940017CBC8 /* RenderCoreAnimationToVideo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RenderCoreAnimationToVideo; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DE1E3E116C00D940017CBC8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		3DE1E3E416C00D940017CBC8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -98,8 +95,6 @@
 				3DE1E3E616C00D940017CBC8 /* Supporting Files */,
 				3D9FDD8916C0F94A004840C6 /* CCBlankMovieAsset.h */,
 				3D9FDD8A16C0F94A004840C6 /* CCBlankMovieAsset.m */,
-				3D9FDD8C16C0F9C8004840C6 /* NSString+NUExtensions.h */,
-				3D9FDD8D16C0F9C8004840C6 /* NSString+NUExtensions.m */,
 			);
 			path = RenderCoreAnimationToVideo;
 			sourceTree = "<group>";
@@ -165,7 +160,6 @@
 			files = (
 				3DE1E3E516C00D940017CBC8 /* main.m in Sources */,
 				3D9FDD8B16C0F94A004840C6 /* CCBlankMovieAsset.m in Sources */,
-				3D9FDD8E16C0F9C8004840C6 /* NSString+NUExtensions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
