@@ -60,7 +60,7 @@ int main(int argc, const char * argv[])
 #define FRAMES_PER_SECOND	25
 
 		NSString *outFileName = @"out.mov";
-		NSURL *exportURL = [NSURL URLWithString:outFileName];
+		NSURL *exportURL = [NSURL fileURLWithPath:outFileName];
 		
 		CFTimeInterval duration
 #if ENABLE_FAST_TEST
