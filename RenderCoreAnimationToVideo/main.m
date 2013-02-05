@@ -118,9 +118,11 @@ int main(int argc, const char * argv[])
 		
 		// Create the animated layer
 		CALayer *renderAnimLayer = [CALayer layer];
-		renderAnimLayer.frame = renderFrame;
 		
 		CFTimeInterval animationDuration = 30.0;
+		
+		CGRect animationFrame = CGRectMake(0, 0, 1280, 720);
+		renderAnimLayer.frame = animationFrame;
 		
 		renderAnimLayer.backgroundColor = CGColorCreateGenericRGB(0.3, 0.0, 0.0, 0.5);
 		
@@ -146,6 +148,21 @@ int main(int argc, const char * argv[])
 
 		renderAnimLayer.beginTime = AVCoreAnimationBeginTimeAtZero;
 		
+		// Create the wrapper layer
+		CALayer *wrapperLayer = [CALayer layer];
+		wrapperLayer.frame = animationFrame;
+		
+		CGFloat animationScale = MIN(renderFrame.size.width / animationFrame.size.width,
+									 renderFrame.size.height / animationFrame.size.height);
+		
+		CGAffineTransform translation = CGAffineTransformMakeTranslation(CGRectGetMidX(renderFrame) - CGRectGetMidX(animationFrame),
+																		 CGRectGetMidY(renderFrame) - CGRectGetMidY(animationFrame));
+		wrapperLayer.affineTransform = CGAffineTransformScale(translation, animationScale, animationScale);
+		
+		[wrapperLayer addSublayer:renderAnimLayer];
+		
+		wrapperLayer.beginTime = AVCoreAnimationBeginTimeAtZero;
+
 		// Create a composition
 		AVMutableVideoCompositionLayerInstruction *layerInstruction =
 		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstruction];
@@ -162,7 +179,7 @@ int main(int argc, const char * argv[])
 		renderComp.instructions  = @[instruction];
 
 		CMPersistentTrackID renderTrackID = [composition unusedTrackID];
-		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:renderAnimLayer
+		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:wrapperLayer
 																												   asTrackID:renderTrackID];
 
 		// Remove the file at exportURL if it exists.
