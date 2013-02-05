@@ -70,7 +70,7 @@ int main(int argc, const char * argv[])
 #endif
 		
 		CMTimeScale targetTimescale = FRAMES_PER_SECOND;
-		CMTime frameDuration = CMTimeMakeWithSeconds(1, targetTimescale);
+		CMTime frameDuration = CMTimeMake(1, targetTimescale);
 		
 		CGRect renderFrame
 #if ENABLE_FAST_TEST
