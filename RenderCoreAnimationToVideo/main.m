@@ -138,16 +138,15 @@ int main(int argc, const char * argv[])
 		animation.fromValue = [NSValue valueWithPoint:square.position];
 		animation.toValue = [NSValue valueWithPoint:CGPointOffset(square.position, 800, 400)];
 		animation.removedOnCompletion = NO;
-		animation.beginTime = AVCoreAnimationBeginTimeAtZero;
 		animation.duration = animationDuration;
+		// beginTime needs to be set to AVCoreAnimationBeginTimeAtZero for all animations when used with AVVideoCompositionCoreAnimationTool.
+		animation.beginTime = AVCoreAnimationBeginTimeAtZero;
 		
 		[CATransaction commit];
 		
 		[square addAnimation:animation forKey:@"position"];
 		[renderAnimLayer addSublayer:square];
 
-		renderAnimLayer.beginTime = AVCoreAnimationBeginTimeAtZero;
-		
 		// Create the wrapper layer
 		CALayer *wrapperLayer = [CALayer layer];
 		wrapperLayer.frame = animationFrame;
@@ -161,8 +160,6 @@ int main(int argc, const char * argv[])
 		
 		[wrapperLayer addSublayer:renderAnimLayer];
 		
-		wrapperLayer.beginTime = AVCoreAnimationBeginTimeAtZero;
-
 		// Create a composition
 		AVMutableVideoCompositionLayerInstruction *layerInstruction =
 		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstruction];
