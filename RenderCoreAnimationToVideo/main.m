@@ -22,6 +22,26 @@ CGPoint CGPointOffset(CGPoint p, CGFloat dx, CGFloat dy)
 }
 
 
+void reportForExportSessionAndURL(AVAssetExportSession *exportSession, NSURL *exportURL)
+{
+    // Just see how things have turned out.
+    NSError *assetExportError = exportSession.error;
+    
+    switch (exportSession.status) {
+        case AVAssetExportSessionStatusCompleted:
+            NSLog(@"\nDone: \n%@", [exportURL path]);
+            break;
+        case AVAssetExportSessionStatusFailed:
+            NSLog(@"\nFailed: \n%@", assetExportError);
+            break;
+        case AVAssetExportSessionStatusCancelled:
+            NSLog(@"\nCanceled: \n%@", assetExportError);
+            break;
+        default:
+            break;
+    }
+}
+
 int main(int argc, const char * argv[])
 {
 
@@ -147,28 +167,32 @@ int main(int argc, const char * argv[])
 		// Create an export session and export
 		AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:composition
 																				presetName:AVAssetExportPresetAppleProRes422LPCM];
-		exportSession.outputURL = [NSURL URLWithString:outFileName];
+		exportSession.outputURL = exportURL;
 		exportSession.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
 		exportSession.shouldOptimizeForNetworkUse = YES;
 		exportSession.videoComposition = renderComp;
 		exportSession.outputFileType = AVFileTypeQuickTimeMovie;
 		
-		// Just see how things have turned out.
 		[exportSession exportAsynchronouslyWithCompletionHandler:^() {
-			NSLog(@"Export completed with status: %ld\nError message: %@", exportSession.status, exportSession.error);
+			// Just see how things have turned out.
+			reportForExportSessionAndURL(exportSession, exportURL);
+			
 			int returnCode = (exportSession.status == AVAssetExportSessionStatusCompleted) ? EXIT_SUCCESS : EXIT_FAILURE;
 			exit(returnCode);
 		}];
 		
 		NSTimeInterval resolution = 0.2;
 		NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
-		while (exportSession.status == AVAssetExportSessionStatusExporting &&
-			   exportSession.progress < 1.0) {
+		while (exportSession.status == AVAssetExportSessionStatusExporting ||
+			   exportSession.status == AVAssetExportSessionStatusWaiting) {
 			NSDate *next = [NSDate dateWithTimeIntervalSinceNow:resolution];
 			[currentRunLoop runMode:NSDefaultRunLoopMode beforeDate:next];
 		}
+		
+		// In case exportSession fails immediately.
+		reportForExportSessionAndURL(exportSession, exportURL);
 	}
 	
-    return EXIT_SUCCESS;
+    return EXIT_FAILURE;
 }
 
