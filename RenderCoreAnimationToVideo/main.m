@@ -141,6 +141,8 @@ int main(int argc, const char * argv[])
 		
 		[square addAnimation:animation forKey:@"position"];
 		[renderAnimLayer addSublayer:square];
+
+		renderAnimLayer.beginTime = AVCoreAnimationBeginTimeAtZero;
 		
 		// Create a composition
 		AVMutableVideoCompositionLayerInstruction *layerInstruction =
