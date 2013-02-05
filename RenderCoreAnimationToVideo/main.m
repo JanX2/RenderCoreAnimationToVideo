@@ -120,6 +120,8 @@ int main(int argc, const char * argv[])
 		CALayer *renderAnimLayer = [CALayer layer];
 		renderAnimLayer.frame = renderFrame;
 		
+		CFTimeInterval animationDuration = 30.0;
+		
 		renderAnimLayer.backgroundColor = CGColorCreateGenericRGB(0.3, 0.0, 0.0, 0.5);
 		
 		CALayer *square = [CALayer layer];
@@ -128,14 +130,14 @@ int main(int argc, const char * argv[])
 		
 		[CATransaction begin];
 		[CATransaction setDisableActions:YES];
-		[CATransaction setAnimationDuration:duration];
+		[CATransaction setAnimationDuration:animationDuration];
 		
 		CABasicAnimation *animation = [CABasicAnimation animation];
 		animation.fromValue = [NSValue valueWithPoint:square.position];
 		animation.toValue = [NSValue valueWithPoint:CGPointOffset(square.position, 800, 400)];
 		animation.removedOnCompletion = NO;
 		animation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		animation.duration = duration;
+		animation.duration = animationDuration;
 		
 		[CATransaction commit];
 		
