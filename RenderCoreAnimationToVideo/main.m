@@ -138,7 +138,7 @@ int main(int argc, const char * argv[])
 		
 		CMPersistentTrackID renderTrackID = [composition unusedTrackID];
 		AVMutableVideoComposition *renderComp = [AVMutableVideoComposition videoComposition];
-		renderComp.renderSize    = renderAnimLayer.frame.size;
+		renderComp.renderSize    = renderFrame.size;
 		renderComp.frameDuration = frameDuration;
 		renderComp.instructions  = @[instruction];
 		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:renderAnimLayer
