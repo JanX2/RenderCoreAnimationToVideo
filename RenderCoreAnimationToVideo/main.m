@@ -52,10 +52,15 @@ CALayer *animationLayerWithFrame(CGRect renderFrame) {
 	CGRect animationFrame = CGRectMake(0, 0, 1280, 720);
 	renderAnimLayer.frame = animationFrame;
 	
-	renderAnimLayer.backgroundColor = CGColorCreateGenericRGB(0.3, 0.0, 0.0, 0.5);
+	CGColorRef backgroundColor = CGColorCreateGenericRGB(0.3, 0.0, 0.0, 0.5);
+	renderAnimLayer.backgroundColor = backgroundColor;
+	CGColorRelease(backgroundColor);
 	
 	CALayer *square = [CALayer layer];
-	square.backgroundColor = CGColorCreateGenericRGB(0, 0, 1, 0.8);
+	CGColorRef squareBackgroundColor = CGColorCreateGenericRGB(0, 0, 1, 0.8);
+	square.backgroundColor = squareBackgroundColor;
+	CGColorRelease(squareBackgroundColor);
+	
 	square.frame = CGRectMake(100, 100, 100, 100);
 	
 	[CATransaction begin];
