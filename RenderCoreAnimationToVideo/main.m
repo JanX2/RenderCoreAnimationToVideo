@@ -28,16 +28,16 @@ void reportForExportSessionAndURL(AVAssetExportSession *exportSession, NSURL *ex
 {
     // Just see how things have turned out.
     NSError *assetExportError = exportSession.error;
-    
+   
     switch (exportSession.status) {
         case AVAssetExportSessionStatusCompleted:
-            NSLog(@"\nDone: \n%@", [exportURL path]);
+            NSLog(@"\n\nSuccess: \n%@", [exportURL path]);
             break;
         case AVAssetExportSessionStatusFailed:
-            NSLog(@"\nFailed: \n%@", assetExportError);
+            NSLog(@"\n\nFailed: \n%@", assetExportError);
             break;
         case AVAssetExportSessionStatusCancelled:
-            NSLog(@"\nCanceled: \n%@", assetExportError);
+            NSLog(@"\n\nCanceled: \n%@", assetExportError);
             break;
         default:
             break;
@@ -204,6 +204,7 @@ int main(int argc, const char * argv[])
 		exportSession.videoComposition = renderComp;
 		exportSession.outputFileType = AVFileTypeQuickTimeMovie;
 		
+#if 0
 		[exportSession exportAsynchronouslyWithCompletionHandler:^() {
 			// Just see how things have turned out.
 			reportForExportSessionAndURL(exportSession, exportURL);
@@ -224,6 +225,55 @@ int main(int argc, const char * argv[])
 		if (exportSession.status != AVAssetExportSessionStatusCompleted) {
 			reportForExportSessionAndURL(exportSession, exportURL);
 		}
+		
+#else
+		dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+		
+		__block NSString *errorString = nil;
+		__block BOOL didSucceed = NO;
+		[exportSession exportAsynchronouslyWithCompletionHandler:^{
+			if (AVAssetExportSessionStatusCompleted == exportSession.status) {
+				didSucceed = YES;
+			}
+			else {
+				didSucceed = NO;
+				if (exportSession.error)
+					errorString = [exportSession.error localizedDescription];
+				else
+					errorString = @"unknown";
+			}
+			dispatch_semaphore_signal(semaphore);
+		}];
+		
+		printf("\n0--------------------100%%\n");
+		float nextTick = 0.0;
+		long semaphoreResult = 0;
+		BOOL isFirst = YES;
+		
+		// Monitor the progress.
+		do {
+			semaphoreResult = dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC)); // Every 100 ms.
+			
+			if (isFirst) {
+				fprintf(stderr, " "); // Indent line.
+				isFirst = NO;
+			}
+			
+			float currentProgress = exportSession.progress;
+			while (currentProgress > nextTick) {
+				// Print an asterisk for every 5%.
+				fprintf(stderr, "*"); // Force to be flush without end of line.
+				nextTick += 0.05;
+			}
+		} while (semaphoreResult);
+		
+		fprintf(stderr, "\n"); // End line.
+		
+		reportForExportSessionAndURL(exportSession, exportURL);
+		dispatch_release(semaphore);
+		
+		return didSucceed ? EXIT_SUCCESS : EXIT_FAILURE;
+#endif
 	}
 	
     return EXIT_FAILURE;
