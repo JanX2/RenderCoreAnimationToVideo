@@ -50,14 +50,15 @@
 					AVVideoWidthKey: @(size.width),
 					AVVideoHeightKey: @(size.height)};
 		
-		avVideoFrameInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
+		avVideoFrameInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
+															   outputSettings:videoSettings];
 		avVideoFrameInput.expectsMediaDataInRealTime = NO;
 		
 		if (avVideoFrameInput == nil)
 			return nil; // COV_NF_LINE
 		
-		pixelAttributes = @{(id)kCVPixelBufferWidthKey: [NSNumber numberWithInt:size.width],
-					  (id)kCVPixelBufferHeightKey: [NSNumber numberWithInt:size.height],
+		pixelAttributes = @{(id)kCVPixelBufferWidthKey: @(size.width),
+					  (id)kCVPixelBufferHeightKey: @(size.height),
 					  (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32ARGB),
 					  (id)kCVPixelBufferCGBitmapContextCompatibilityKey: @YES};
 		
@@ -102,10 +103,12 @@
 		while (! avVideoFrameInput.readyForMoreMediaData)
 			usleep(50000); // COV_NF_LINE
 		
-		if (![avVideoFrameAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:kCMTimeZero])
+		if (![avVideoFrameAdaptor appendPixelBuffer:pixelBuffer
+							   withPresentationTime:kCMTimeZero])
 			return nil; // COV_NF_LINE
 		
-		if (![avVideoFrameAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:duration])
+		if (![avVideoFrameAdaptor appendPixelBuffer:pixelBuffer
+							   withPresentationTime:duration])
 			return nil; // COV_NF_LINE
 		
 		[avVideoFrameInput markAsFinished];
