@@ -18,7 +18,12 @@
 	return self;
 }
 
-- (id) initWithSize:(CGSize)size duration:(CMTime)duration andBackgroundColor:(CGColorRef)color
+- (id) initWithSize:(CGSize)size duration:(CMTime)duration andBackgroundColor:(CGColorRef)color;
+{
+	return [self initWithSize:size duration:duration andBackgroundColor:color error:NULL];
+}
+
+- (id) initWithSize:(CGSize)size duration:(CMTime)duration andBackgroundColor:(CGColorRef)color error:(NSError **)outError
 {
 	AVAssetWriter *avAssetWriter = nil;
 	AVAssetWriterInput *avVideoFrameInput = nil;
@@ -29,6 +34,7 @@
 	CGContextRef context = NULL;
 	CGColorSpaceRef colorSpace = NULL;
 	CVReturn result;
+	BOOL success = NO;
 	
 	NSError	 *error	   = nil;
 	
@@ -130,7 +136,24 @@
 		
 		[avVideoFrameInput markAsFinished];
 		[avAssetWriter endSessionAtSourceTime:duration];
-		[avAssetWriter finishWriting];
+		success = [avAssetWriter finishWriting];
+		error = avAssetWriter.error;
+
+#if 0
+		switch (avAssetWriter.status) {
+			case AVAssetWriterStatusCompleted:
+				NSLog(@"\n\nSuccess: \n%@", tempURL);
+				break;
+			case AVAssetWriterStatusFailed:
+				NSLog(@"\n\nFailed: \n%@", error);
+				break;
+			case AVAssetWriterStatusCancelled:
+				NSLog(@"\n\nCanceled: \n%@", error);
+				break;
+			default:
+				break;
+		}
+#endif
 	}
 	@finally {
 		if (context)
@@ -145,12 +168,28 @@
 		}
 	}
 	
-	return [self initWithURL:tempURL options:nil];
+	self = [self initWithURL:tempURL options:nil];
+	
+	if (success) {
+		return self;
+	}
+	else {
+		if (outError != NULL) {
+			*outError = error;
+		}
+		
+		return nil;
+	}
 }
 
-+ (id) blankMovieWithSize:(CGSize)size duration:(CMTime)duration andBackgroundColor:(CGColorRef)color
++ (id) blankMovieWithSize:(CGSize)size duration:(CMTime)duration andBackgroundColor:(CGColorRef)color;
 {
-	return [[self alloc] initWithSize:size duration:duration andBackgroundColor:color];
+	return [[self alloc] initWithSize:size duration:duration andBackgroundColor:color error:NULL];
+}
+
++ (id) blankMovieWithSize:(CGSize)size duration:(CMTime)duration andBackgroundColor:(CGColorRef)color error:(NSError **)error
+{
+	return [[self alloc] initWithSize:size duration:duration andBackgroundColor:color error:error];
 }
 
 

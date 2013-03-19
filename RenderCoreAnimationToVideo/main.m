@@ -143,11 +143,12 @@ int main(int argc, const char * argv[])
 		CGColorRef bgColor = CGColorCreateGenericGray(0.0, 1.0);
 		CCBlankMovieAsset *asset = [CCBlankMovieAsset blankMovieWithSize:renderFrame.size
 																duration:durationTime
-													  andBackgroundColor:bgColor];
+													  andBackgroundColor:bgColor
+																   error:&error];
 		CFRelease(bgColor);
 #endif
 		if (asset == nil) {
-			NSLog(@"Missing movie file:\n%@", sourceFileURL);
+			NSLog(@"Missing movie file:\n%@\n\n%@", sourceFileURL, error);
 			return EXIT_FAILURE;
 		}
 		
