@@ -16,6 +16,8 @@
 #define ENABLE_COMPOSITING_OVER_SOURCE_FILE	0
 #define ENABLE_FAST_TEST					1
 
+CALayer *animationLayerWithFrame(CGRect renderFrame);
+
 CGPoint CGPointOffset(CGPoint p, CGFloat dx, CGFloat dy)
 {
 	return CGPointMake(p.x + dx, p.y + dy);
@@ -40,6 +42,52 @@ void reportForExportSessionAndURL(AVAssetExportSession *exportSession, NSURL *ex
         default:
             break;
     }
+}
+
+CALayer *animationLayerWithFrame(CGRect renderFrame) {
+	CALayer *renderAnimLayer = [CALayer layer];
+	
+	CFTimeInterval animationDuration = 30.0;
+	
+	CGRect animationFrame = CGRectMake(0, 0, 1280, 720);
+	renderAnimLayer.frame = animationFrame;
+	
+	renderAnimLayer.backgroundColor = CGColorCreateGenericRGB(0.3, 0.0, 0.0, 0.5);
+	
+	CALayer *square = [CALayer layer];
+	square.backgroundColor = CGColorCreateGenericRGB(0, 0, 1, 0.8);
+	square.frame = CGRectMake(100, 100, 100, 100);
+	
+	[CATransaction begin];
+	[CATransaction setDisableActions:YES];
+	[CATransaction setAnimationDuration:animationDuration];
+	
+	CABasicAnimation *animation = [CABasicAnimation animation];
+	animation.fromValue = [NSValue valueWithPoint:square.position];
+	animation.toValue = [NSValue valueWithPoint:CGPointOffset(square.position, 800, 400)];
+	animation.removedOnCompletion = NO;
+	animation.duration = animationDuration;
+	// beginTime needs to be set to AVCoreAnimationBeginTimeAtZero for all animations when used with AVVideoCompositionCoreAnimationTool.
+	animation.beginTime = AVCoreAnimationBeginTimeAtZero;
+	
+	[CATransaction commit];
+	
+	[square addAnimation:animation forKey:@"position"];
+	[renderAnimLayer addSublayer:square];
+	
+	// Create the wrapper layer for scaling to match the renderFrame
+	CALayer *wrapperLayer = [CALayer layer];
+	wrapperLayer.frame = animationFrame;
+	
+	CGFloat animationScale = MIN(renderFrame.size.width / animationFrame.size.width,
+								 renderFrame.size.height / animationFrame.size.height);
+	
+	CGAffineTransform translation = CGAffineTransformMakeTranslation(CGRectGetMidX(renderFrame) - CGRectGetMidX(animationFrame),
+																	 CGRectGetMidY(renderFrame) - CGRectGetMidY(animationFrame));
+	wrapperLayer.affineTransform = CGAffineTransformScale(translation, animationScale, animationScale);
+	
+	[wrapperLayer addSublayer:renderAnimLayer];
+	return wrapperLayer;
 }
 
 int main(int argc, const char * argv[])
@@ -115,51 +163,10 @@ int main(int argc, const char * argv[])
 			NSLog(@"%@", error);
 			return EXIT_FAILURE;
 		}
-		
-		// Create the animated layer
-		CALayer *renderAnimLayer = [CALayer layer];
-		
-		CFTimeInterval animationDuration = 30.0;
-		
-		CGRect animationFrame = CGRectMake(0, 0, 1280, 720);
-		renderAnimLayer.frame = animationFrame;
-		
-		renderAnimLayer.backgroundColor = CGColorCreateGenericRGB(0.3, 0.0, 0.0, 0.5);
-		
-		CALayer *square = [CALayer layer];
-		square.backgroundColor = CGColorCreateGenericRGB(0, 0, 1, 0.8);
-		square.frame = CGRectMake(100, 100, 100, 100);
-		
-		[CATransaction begin];
-		[CATransaction setDisableActions:YES];
-		[CATransaction setAnimationDuration:animationDuration];
-		
-		CABasicAnimation *animation = [CABasicAnimation animation];
-		animation.fromValue = [NSValue valueWithPoint:square.position];
-		animation.toValue = [NSValue valueWithPoint:CGPointOffset(square.position, 800, 400)];
-		animation.removedOnCompletion = NO;
-		animation.duration = animationDuration;
-		// beginTime needs to be set to AVCoreAnimationBeginTimeAtZero for all animations when used with AVVideoCompositionCoreAnimationTool.
-		animation.beginTime = AVCoreAnimationBeginTimeAtZero;
-		
-		[CATransaction commit];
-		
-		[square addAnimation:animation forKey:@"position"];
-		[renderAnimLayer addSublayer:square];
 
-		// Create the wrapper layer for scaling to match the renderFrame
-		CALayer *wrapperLayer = [CALayer layer];
-		wrapperLayer.frame = animationFrame;
-		
-		CGFloat animationScale = MIN(renderFrame.size.width / animationFrame.size.width,
-									 renderFrame.size.height / animationFrame.size.height);
-		
-		CGAffineTransform translation = CGAffineTransformMakeTranslation(CGRectGetMidX(renderFrame) - CGRectGetMidX(animationFrame),
-																		 CGRectGetMidY(renderFrame) - CGRectGetMidY(animationFrame));
-		wrapperLayer.affineTransform = CGAffineTransformScale(translation, animationScale, animationScale);
-		
-		[wrapperLayer addSublayer:renderAnimLayer];
-		
+		// Create the animated layer
+		CALayer *animationLayer = animationLayerWithFrame(renderFrame);
+
 		// Create a composition
 		AVMutableVideoCompositionLayerInstruction *layerInstruction =
 		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstruction];
@@ -176,7 +183,7 @@ int main(int argc, const char * argv[])
 		renderComp.instructions  = @[instruction];
 
 		CMPersistentTrackID renderTrackID = [composition unusedTrackID];
-		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:wrapperLayer
+		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:animationLayer
 																												   asTrackID:renderTrackID];
 
 		// Remove the file at exportURL if it exists.
