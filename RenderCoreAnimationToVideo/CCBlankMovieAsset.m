@@ -99,13 +99,26 @@
 		
 		CGContextSetFillColorWithColor(context, color);
 		CGContextFillRect(context, CGRectMake(0, 0, size.width, size.height));
+
+		NSTimeInterval resolution = 0.050;
+		NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
 		
-		while (! avVideoFrameInput.readyForMoreMediaData)
-			usleep(50000); // COV_NF_LINE
+		// Wait until avVideoFrameInput is ready for more data.
+		// See http://stackoverflow.com/questions/5877149/avassetwriterinput-and-readyformoremediadata
+		while (avVideoFrameInput.readyForMoreMediaData == NO) {
+			NSDate *next = [NSDate dateWithTimeIntervalSinceNow:resolution];
+			[currentRunLoop runMode:NSDefaultRunLoopMode beforeDate:next];
+		}
 		
 		if (![avVideoFrameAdaptor appendPixelBuffer:pixelBuffer
 							   withPresentationTime:kCMTimeZero])
 			return nil; // COV_NF_LINE
+		
+		// Wait until avVideoFrameInput is ready for more data.
+		while (avVideoFrameInput.readyForMoreMediaData == NO) {
+			NSDate *next = [NSDate dateWithTimeIntervalSinceNow:resolution];
+			[currentRunLoop runMode:NSDefaultRunLoopMode beforeDate:next];
+		}
 		
 		if (![avVideoFrameAdaptor appendPixelBuffer:pixelBuffer
 							   withPresentationTime:duration])
