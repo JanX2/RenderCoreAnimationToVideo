@@ -46,7 +46,7 @@
 		if (avAssetWriter == nil)
 			return nil; // COV_NF_LINE
 		
-		videoSettings = @{AVVideoCodecKey: AVVideoCodecH264,
+		videoSettings = @{AVVideoCodecKey: AVVideoCodecAppleProRes422, // On iOS, we would have to use AVVideoCodecH264
 					AVVideoWidthKey: @(size.width),
 					AVVideoHeightKey: @(size.height)};
 		
