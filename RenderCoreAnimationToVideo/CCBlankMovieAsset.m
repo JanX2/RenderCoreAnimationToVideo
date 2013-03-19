@@ -41,7 +41,9 @@
 		if ([[NSFileManager defaultManager] fileExistsAtPath:tempURL.path])
 			[[NSFileManager defaultManager] removeItemAtURL:tempURL error:nil]; // COV_NF_LINE
 		
-		avAssetWriter = [AVAssetWriter assetWriterWithURL:tempURL fileType:AVFileTypeQuickTimeMovie error:&error];
+		avAssetWriter = [AVAssetWriter assetWriterWithURL:tempURL
+												 fileType:AVFileTypeQuickTimeMovie
+													error:&error];
 		
 		if (avAssetWriter == nil)
 			return nil; // COV_NF_LINE
@@ -99,7 +101,7 @@
 		
 		CGContextSetFillColorWithColor(context, color);
 		CGContextFillRect(context, CGRectMake(0, 0, size.width, size.height));
-
+		
 		NSTimeInterval resolution = 0.050;
 		NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
 		
@@ -109,10 +111,11 @@
 			NSDate *next = [NSDate dateWithTimeIntervalSinceNow:resolution];
 			[currentRunLoop runMode:NSDefaultRunLoopMode beforeDate:next];
 		}
-		
+
 		if (![avVideoFrameAdaptor appendPixelBuffer:pixelBuffer
-							   withPresentationTime:kCMTimeZero])
+							   withPresentationTime:kCMTimeZero]) {
 			return nil; // COV_NF_LINE
+		}
 		
 		// Wait until avVideoFrameInput is ready for more data.
 		while (avVideoFrameInput.readyForMoreMediaData == NO) {
@@ -121,8 +124,9 @@
 		}
 		
 		if (![avVideoFrameAdaptor appendPixelBuffer:pixelBuffer
-							   withPresentationTime:duration])
+							   withPresentationTime:duration]) {
 			return nil; // COV_NF_LINE
+		}
 		
 		[avVideoFrameInput markAsFinished];
 		[avAssetWriter endSessionAtSourceTime:duration];
