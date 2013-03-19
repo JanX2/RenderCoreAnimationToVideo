@@ -147,7 +147,7 @@ int main(int argc, const char * argv[])
 		[square addAnimation:animation forKey:@"position"];
 		[renderAnimLayer addSublayer:square];
 
-		// Create the wrapper layer
+		// Create the wrapper layer for scaling to match the renderFrame
 		CALayer *wrapperLayer = [CALayer layer];
 		wrapperLayer.frame = animationFrame;
 		
