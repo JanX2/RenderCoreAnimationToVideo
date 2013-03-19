@@ -55,8 +55,17 @@
 			return nil; // COV_NF_LINE
 		
 		videoSettings = @{AVVideoCodecKey: AVVideoCodecAppleProRes422, // On iOS, we would have to use AVVideoCodecH264
+					//AVVideoScalingModeKey: AVVideoScalingModeResize,
 					AVVideoWidthKey: @(size.width),
-					AVVideoHeightKey: @(size.height)};
+					AVVideoHeightKey: @(size.height),
+#if 0
+					AVVideoColorPropertiesKey: @{ // HD color space. See http://developer.apple.com/library/mac/#technotes/tn2227/_index.html
+						AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+						AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+						AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2
+					}
+#endif
+					};
 		
 		avVideoFrameInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
 															   outputSettings:videoSettings];
