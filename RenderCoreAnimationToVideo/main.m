@@ -78,7 +78,7 @@ CALayer *animationLayerWithFrame(CGRect renderFrame) {
 	animation.toValue = [NSValue valueWithPoint:CGPointOffset(square.position, 800, 400)];
 	animation.removedOnCompletion = NO;
 	animation.duration = animationDuration;
-	// beginTime needs to be set to AVCoreAnimationBeginTimeAtZero for all animations when used with AVVideoCompositionCoreAnimationTool.
+	// beginTime needs to be set to >= AVCoreAnimationBeginTimeAtZero (must not me zero) for all animations when used with AVVideoCompositionCoreAnimationTool.
 	animation.beginTime = AVCoreAnimationBeginTimeAtZero;
 	
 	[CATransaction commit];
