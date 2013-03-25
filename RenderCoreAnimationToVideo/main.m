@@ -16,6 +16,12 @@
 #define ENABLE_COMPOSITING_OVER_SOURCE_FILE	0
 #define ENABLE_FAST_TEST					1
 
+
+NSString * const JXRenderCAErrorDomain = @"de.geheimwerk.Error.JXRenderCA";
+
+const int kJXNoVideoTracksInMovieFile = 1001;
+
+
 CALayer *animationLayerWithFrame(CGRect renderFrame);
 
 CGPoint CGPointOffset(CGPoint p, CGFloat dx, CGFloat dy)
@@ -95,6 +101,86 @@ CALayer *animationLayerWithFrame(CGRect renderFrame) {
 	return wrapperLayer;
 }
 
+AVAssetExportSession * prepareExportSession(CALayer *animationLayer,
+											NSURL *bgMovieFileURL,
+											CGRect renderFrame,
+											CMTime durationTime,
+											CMTime frameDuration,
+											CGColorRef bgColor,
+											NSURL *exportURL,
+											NSError **outError) {
+    // Composition setup.
+    AVMutableComposition *composition = [AVMutableComposition composition];
+    
+    AVURLAsset *asset;
+    if (bgMovieFileURL != nil) {
+        asset = [AVURLAsset URLAssetWithURL:bgMovieFileURL
+                                    options:nil];
+    } else {
+        asset = [CCBlankMovieAsset blankMovieWithSize:renderFrame.size
+                                             duration:durationTime
+                                   andBackgroundColor:bgColor
+                                                error:outError];
+    }
+    
+    if (asset == nil) {
+        return nil;
+    }
+    
+    AVMutableCompositionTrack *trackA = [composition addMutableTrackWithMediaType:AVMediaTypeVideo
+                                                                 preferredTrackID:kCMPersistentTrackID_Invalid];
+    
+    NSArray *videoTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+    if (videoTracks.count == 0) {
+		if (outError != NULL) {
+			NSString *errorDescription = NSLocalizedString(@"There are no video tracks in the background movie file. Aborting animation export.", @"No video tracks error");
+			
+			*outError = [NSError errorWithDomain:JXRenderCAErrorDomain
+											code:kJXNoVideoTracksInMovieFile
+										userInfo:@{NSLocalizedDescriptionKey: errorDescription}];
+		}
+		return nil;
+    }
+    
+    AVAssetTrack *sourceVideoTrack = videoTracks[0];
+    if ([trackA insertTimeRange:CMTimeRangeMake(kCMTimeZero, [asset duration])
+						ofTrack:sourceVideoTrack
+						 atTime:kCMTimeZero
+                          error:outError] == NO) {
+        return nil;
+    }
+    
+    // Create a composition
+    AVMutableVideoCompositionLayerInstruction *layerInstruction =
+    [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstruction];
+    CMPersistentTrackID trackID = [composition unusedTrackID];
+    layerInstruction.trackID = trackID;
+    
+    AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+    instruction.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
+    instruction.layerInstructions = @[layerInstruction];
+    
+    AVMutableVideoComposition *renderComp = [AVMutableVideoComposition videoComposition];
+    renderComp.renderSize    = renderFrame.size;
+    renderComp.frameDuration = frameDuration;
+    renderComp.instructions  = @[instruction];
+    
+    CMPersistentTrackID renderTrackID = [composition unusedTrackID];
+    renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:animationLayer
+                                                                                                               asTrackID:renderTrackID];
+    
+    // Create an export session and export
+    AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:composition
+                                                                            presetName:AVAssetExportPresetAppleProRes422LPCM];
+    exportSession.outputURL = exportURL;
+    exportSession.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
+    exportSession.shouldOptimizeForNetworkUse = YES;
+    exportSession.videoComposition = renderComp;
+    exportSession.outputFileType = AVFileTypeQuickTimeMovie;
+	
+    return exportSession;
+}
+
 int main(int argc, const char * argv[])
 {
 
@@ -107,7 +193,7 @@ int main(int argc, const char * argv[])
 		NSString *inFileName = @"in.mp4";
 		NSURL *sourceFileURL = [NSURL fileURLWithPath:inFileName];
 #else
-		NSURL *sourceFileURL = nil;
+		NSURL *bgMovieFileURL = nil;
 #endif
 
 #define FRAMES_PER_SECOND	25
@@ -139,6 +225,13 @@ int main(int argc, const char * argv[])
 
 		CGColorRef bgColor = CGColorCreateGenericGray(0.0, 1.0);
 		
+#if ENABLE_COMPOSITING_OVER_SOURCE_FILE
+		if ([sourceFileURL checkResourceIsReachableAndReturnError:&error] == NO) {
+			NSLog(@"Missing movie file:\n%@\n\n%@", sourceFileURL, error);
+			return EXIT_FAILURE;
+		}
+#endif
+		
 		// Remove the file at exportURL if it exists.
 		if ([exportURL checkResourceIsReachableAndReturnError:NULL] == YES) {
 			NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -148,70 +241,12 @@ int main(int argc, const char * argv[])
 			}
 		}
 		
-		// Composition setup.
-		AVMutableComposition *composition = [AVMutableComposition composition];
+        AVAssetExportSession *exportSession = prepareExportSession(animationLayer, bgMovieFileURL, renderFrame, durationTime, frameDuration, bgColor, exportURL, &error);
 		
-		AVURLAsset *asset;
-		if (sourceFileURL != nil) {
-			asset = [AVURLAsset URLAssetWithURL:sourceFileURL
-										options:nil];
-		} else {
-			asset = [CCBlankMovieAsset blankMovieWithSize:renderFrame.size
-												 duration:durationTime
-									   andBackgroundColor:bgColor
-													error:&error];
-		}
-		
-		if (asset == nil) {
-			NSLog(@"Missing movie file:\n%@\n\n%@", sourceFileURL, error);
+		if (exportSession == nil) {
+			NSLog(@"\n%@", error);
 			return EXIT_FAILURE;
 		}
-		
-		AVMutableCompositionTrack *trackA = [composition addMutableTrackWithMediaType:AVMediaTypeVideo
-																	 preferredTrackID:kCMPersistentTrackID_Invalid];
-		
-		NSArray *videoTracks = [asset tracksWithMediaType:AVMediaTypeVideo];
-		if (videoTracks.count == 0) {
-			NSLog(@"No video tracks in file:\n%@", sourceFileURL);
-			return EXIT_FAILURE;
-		}
-		
-		AVAssetTrack *sourceVideoTrack = videoTracks[0];
-		if ([trackA insertTimeRange:CMTimeRangeMake(kCMTimeZero, [asset duration])
-						ofTrack:sourceVideoTrack
-						 atTime:kCMTimeZero
-							  error:&error] == NO) {
-			NSLog(@"%@", error);
-			return EXIT_FAILURE;
-		}
-
-		// Create a composition
-		AVMutableVideoCompositionLayerInstruction *layerInstruction =
-		[AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstruction];
-		CMPersistentTrackID trackID = [composition unusedTrackID];
-		layerInstruction.trackID = trackID;
-		
-		AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
-		instruction.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
-		instruction.layerInstructions = @[layerInstruction];
-		
-		AVMutableVideoComposition *renderComp = [AVMutableVideoComposition videoComposition];
-		renderComp.renderSize    = renderFrame.size;
-		renderComp.frameDuration = frameDuration;
-		renderComp.instructions  = @[instruction];
-
-		CMPersistentTrackID renderTrackID = [composition unusedTrackID];
-		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:animationLayer
-																												   asTrackID:renderTrackID];
-
-		// Create an export session and export
-		AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:composition
-																				presetName:AVAssetExportPresetAppleProRes422LPCM];
-		exportSession.outputURL = exportURL;
-		exportSession.timeRange = CMTimeRangeMake(kCMTimeZero, durationTime);
-		exportSession.shouldOptimizeForNetworkUse = YES;
-		exportSession.videoComposition = renderComp;
-		exportSession.outputFileType = AVFileTypeQuickTimeMovie;
 		
 		CFRelease(bgColor);
 
