@@ -141,15 +141,18 @@ int main(int argc, const char * argv[])
 		
 		// Composition setup.
 		AVMutableComposition *composition = [AVMutableComposition composition];
-#if ENABLE_COMPOSITING_OVER_SOURCE_FILE
-		AVURLAsset *asset = [AVURLAsset URLAssetWithURL:sourceFileURL
-												options:nil];
-#else
-		CCBlankMovieAsset *asset = [CCBlankMovieAsset blankMovieWithSize:renderFrame.size
-																duration:durationTime
-													  andBackgroundColor:bgColor
-																   error:&error];
-#endif
+		
+		AVURLAsset *asset;
+		if (sourceFileURL != nil) {
+			asset = [AVURLAsset URLAssetWithURL:sourceFileURL
+										options:nil];
+		} else {
+			asset = [CCBlankMovieAsset blankMovieWithSize:renderFrame.size
+												 duration:durationTime
+									   andBackgroundColor:bgColor
+													error:&error];
+		}
+		
 		if (asset == nil) {
 			NSLog(@"Missing movie file:\n%@\n\n%@", sourceFileURL, error);
 			return EXIT_FAILURE;
