@@ -139,6 +139,15 @@ int main(int argc, const char * argv[])
 
 		CGColorRef bgColor = CGColorCreateGenericGray(0.0, 1.0);
 		
+		// Remove the file at exportURL if it exists.
+		if ([exportURL checkResourceIsReachableAndReturnError:NULL] == YES) {
+			NSFileManager *fileManager = [NSFileManager defaultManager];
+			if ([fileManager removeItemAtURL:exportURL error:&error] == NO) {
+				NSLog(@"\n%@", error);
+				return EXIT_FAILURE;
+			}
+		}
+		
 		// Composition setup.
 		AVMutableComposition *composition = [AVMutableComposition composition];
 		
@@ -195,15 +204,6 @@ int main(int argc, const char * argv[])
 		renderComp.animationTool = [AVVideoCompositionCoreAnimationTool videoCompositionCoreAnimationToolWithAdditionalLayer:animationLayer
 																												   asTrackID:renderTrackID];
 
-		// Remove the file at exportURL if it exists.
-		if ([exportURL checkResourceIsReachableAndReturnError:NULL] == YES) {
-			NSFileManager *fileManager = [NSFileManager defaultManager];
-			if ([fileManager removeItemAtURL:exportURL error:&error] == NO) {
-				NSLog(@"\n%@", error);
-				return EXIT_FAILURE;
-			}
-		}
-		
 		// Create an export session and export
 		AVAssetExportSession *exportSession = [AVAssetExportSession exportSessionWithAsset:composition
 																				presetName:AVAssetExportPresetAppleProRes422LPCM];
