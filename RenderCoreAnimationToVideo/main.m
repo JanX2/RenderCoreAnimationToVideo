@@ -122,7 +122,7 @@ int main(int argc, const char * argv[])
 		= 30.0;
 #endif
 		
-		CMTimeScale targetTimescale = FRAMES_PER_SECOND;
+		CMTimeScale targetTimescale = FRAMES_PER_SECOND; // Please make sure you know what you are doing when not using integral framerates (NTSC)!
 		CMTime frameDuration = CMTimeMake(1, targetTimescale);
 		
 		CGRect renderFrame
@@ -132,23 +132,23 @@ int main(int argc, const char * argv[])
 		= CGRectMake(0, 0, 1280, 720);
 #endif
 		
-		CMTime durationTime = CMTimeMakeWithSeconds(duration, 1);
+		CMTime durationTime = CMTimeMakeWithSeconds(duration, targetTimescale);
 		
 		// Create the animated layer
 		CALayer *animationLayer = animationLayerWithFrame(renderFrame);
 
+		CGColorRef bgColor = CGColorCreateGenericGray(0.0, 1.0);
+		
 		// Composition setup.
 		AVMutableComposition *composition = [AVMutableComposition composition];
 #if ENABLE_COMPOSITING_OVER_SOURCE_FILE
 		AVURLAsset *asset = [AVURLAsset URLAssetWithURL:sourceFileURL
 												options:nil];
 #else
-		CGColorRef bgColor = CGColorCreateGenericGray(0.0, 1.0);
 		CCBlankMovieAsset *asset = [CCBlankMovieAsset blankMovieWithSize:renderFrame.size
 																duration:durationTime
 													  andBackgroundColor:bgColor
 																   error:&error];
-		CFRelease(bgColor);
 #endif
 		if (asset == nil) {
 			NSLog(@"Missing movie file:\n%@\n\n%@", sourceFileURL, error);
@@ -210,6 +210,8 @@ int main(int argc, const char * argv[])
 		exportSession.videoComposition = renderComp;
 		exportSession.outputFileType = AVFileTypeQuickTimeMovie;
 		
+		CFRelease(bgColor);
+
 #if 0
 		[exportSession exportAsynchronouslyWithCompletionHandler:^() {
 			// Just see how things have turned out.
