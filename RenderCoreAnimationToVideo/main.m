@@ -134,6 +134,9 @@ int main(int argc, const char * argv[])
 		
 		CMTime durationTime = CMTimeMakeWithSeconds(duration, 1);
 		
+		// Create the animated layer
+		CALayer *animationLayer = animationLayerWithFrame(renderFrame);
+
 		// Composition setup.
 		AVMutableComposition *composition = [AVMutableComposition composition];
 #if ENABLE_COMPOSITING_OVER_SOURCE_FILE
@@ -169,9 +172,6 @@ int main(int argc, const char * argv[])
 			NSLog(@"%@", error);
 			return EXIT_FAILURE;
 		}
-
-		// Create the animated layer
-		CALayer *animationLayer = animationLayerWithFrame(renderFrame);
 
 		// Create a composition
 		AVMutableVideoCompositionLayerInstruction *layerInstruction =
